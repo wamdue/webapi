@@ -25,11 +25,34 @@
                 }
             });
         }
+        function makePostXml() {
+            $.ajax('./rel', {
+                method: 'post',
+                dataType: 'xml',
+                data: {
+                    Date : "2018-03-19T13:25:38.8184596+03:00",
+                    Data : [
+                        {
+                            name : "Sample 3",
+                            value : 123123
+                        },
+                        {
+                            name : "Sample 4",
+                            value  : 546546
+                        }
+                    ]
+                }
+            });
+        }
     </script>
 </head>
 <body>
     <div>
-        <input type="button" onclick="makePost()" value="post data"/>
+        <input type="button" onclick="makePost()" value="post data json"/>
     </div>
+    <div>
+        <input type="button" onclick="makePostXml()" value="post data xml"/>
+    </div>
+
 </body>
 </html>

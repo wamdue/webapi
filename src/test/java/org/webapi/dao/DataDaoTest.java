@@ -5,8 +5,6 @@ import org.junit.Test;
 import org.webapi.model.Data;
 import org.webapi.model.Entry;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -32,6 +30,10 @@ public class DataDaoTest {
      */
     private DataDao dao;
 
+
+    /**
+     * When trying to save data to db, then returning it by id, expected that objects are equal.
+     */
     @Test
     public void whenInsertNewDataToDbThenMustFindItInDb() {
         Data data = new Data();
@@ -60,9 +62,6 @@ public class DataDaoTest {
     public void init() throws ClassNotFoundException {
         Class.forName("org.hsqldb.jdbc.JDBCDriver");
         try {
-//            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-//            InputStream input = cl.getResourceAsStream("tables.properties");
-//            this.props.load(input);
             this.dao = new DataDao(getConnection());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -77,7 +76,7 @@ public class DataDaoTest {
         try (Connection connection = getConnection();
         Statement statement = connection.createStatement()) {
             statement.addBatch("create table if not exists head(id varchar(50) primary key, head_key timestamp with time zone);");
-            statement.addBatch("create table if not exists body(head_id varchar(50) references head(id), name varchar(50), value varchar(50));"");
+            statement.addBatch("create table if not exists body(head_id varchar(50) references head(id), name varchar(50), value varchar(50));");
             statement.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();

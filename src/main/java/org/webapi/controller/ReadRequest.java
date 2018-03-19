@@ -34,11 +34,6 @@ public class ReadRequest extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
         String app = "application/json";
-
-        if (req.getParameter("xml") != null) {
-            app = "application/xml";
-        }
-
         resp.setContentType(app);
         ObjectMapper mapper = new ObjectMapper();
         mapper.setDateFormat(this.sdf);
