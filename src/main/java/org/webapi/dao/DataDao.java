@@ -2,14 +2,13 @@ package org.webapi.dao;
 
 import org.webapi.config.Connect;
 import org.webapi.model.Data;
+import org.webapi.model.Entry;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -18,17 +17,17 @@ import java.util.UUID;
  * @version 1.0
  * @since 12.03.2018
  */
-public class EntryDao {
+public class DataDao {
     private Connection connection;
     private Properties props = Connect.CONNECT.getProps();
 
-    public EntryDao(Connection connection) {
+    public DataDao(Connection connection) {
         this.connection = connection;
     }
 
     public String insertHead(Data data) {
-        String result = "error";
         try (PreparedStatement statement = this.connection.prepareStatement(this.props.getProperty("insert_head"))) {
+            this.connection.setAutoCommit(false);
             String id = UUID.nameUUIDFromBytes(data.getDate().toString().getBytes()).toString();
             statement.setString(1, id);
             statement.setTimestamp(2, data.getDate());
@@ -36,6 +35,7 @@ public class EntryDao {
 
             data.setId(id);
             this.insertBody(data);
+            this.connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -54,14 +54,16 @@ public class EntryDao {
     }
 
     private Data parseSet(ResultSet set) {
-        Data data = null;
+        Data data = new Data();
+        Entry entry = null;
         try {
-            set.next();
-            data.setId(set.getString("id"));
-            data.setDate(set.getTimestamp("date"));
-            data.addData(set.getString("name"), set.getInt("value"));
             while (set.next()) {
-                data.addData(set.getString("name"), set.getInt("value"));
+            entry = new Entry();
+            data.setId(set.getString("id"));
+            data.setDate(set.getTimestamp("head_key"));
+            entry.setName(set.getString("name"));
+            entry.setValue(set.getInt("value"));
+            data.addData(entry);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -77,8 +79,8 @@ public class EntryDao {
 
     private void insertBody(Data data) {
         try (Statement statement = this.connection.createStatement()) {
-            for (Map.Entry<String, Integer> map : data.getData().entrySet()) {
-                statement.addBatch(String.format(props.getProperty("insert_body"), data.getId(), map.getKey(), map.getValue()));
+            for (Entry entry : data.getData()) {
+                statement.addBatch(String.format(props.getProperty("insert_body"), data.getId(), entry.getName(), entry.getValue()));
             }
             statement.executeBatch();
         } catch (SQLException e) {
